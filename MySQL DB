@@ -1,0 +1,59 @@
+DROP database IF EXISTS odb1;
+create database odb1;
+use odb1;
+
+create table choco (
+pkey int unsigned not null auto_increment primary key,
+brand_name char(32) not null,
+name char(32) not null,
+on_hand char(32) not null,
+price char (32) not null);
+
+create table ouser (
+pkey int unsigned not null auto_increment primary key,
+oid int unsigned not null,
+username char(32) not null,
+password char(32) not null,
+pin char(32) not null,
+access_state char(32) not null,
+access_level char (32) not null,
+access_cnt int unsigned not null,
+access_denied_cnt int unsigned not null,
+create_date datetime,
+last_access_date datetime,
+fkey_odemo int unsigned not null);
+
+create table odemo (
+pkey int unsigned not null auto_increment primary key,
+f_name char(32) not null,
+m_name char(32) not null,
+l_name char(32) not null,
+street char(32) not null,
+city char(32) not null,
+state char(32) not null,
+zip char(32) not null);
+
+describe ouser;
+describe odemo;
+describe choco;
+
+insert into ouser values
+(NULL,0,"root","pwroot55","asdfasdfasdf", "new_account","root",0,0,NOW(),NOW(),-1),
+(NULL,1,"bdoswald","pwbob55","fdhdfghfhf", "new_account","webmaster",0,0,NOW(),NOW(),1),
+(NULL,2,"bsroland","pwbetty55","gjgjgfjfghj", "new_account","customer",0,0,NOW(),NOW(),2);
+
+insert into odemo values
+(NULL,"Bob","Dean","Oswald","3153 NW 15th","Ankeny","Iowa","50023"),
+(NULL,"Betty","Sue","Roland","8080 NW Intel","Porterville","California","93257");
+
+insert into choco values
+(NULL,"Kinder","Bueno",".99"),
+(NULL,"Prince Polo","Hazelnut",".39"),
+(NULL,"Kinder","Delice Kokos",".50"),
+(NULL,"Napolitanke","Chocolate","2.59");
+
+select username,access_level from ouser;
+select password from ouser where username = 'bsroland';
+select ouser.username,odemo.l_name,odemo.city from
+ouser,odemo where ouser.fkey_odemo = odemo.pkey;
+select brand_name,name,price from choco;
