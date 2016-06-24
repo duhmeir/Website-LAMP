@@ -1,0 +1,749 @@
+<?php
+function oLF()
+{
+ return("\n");
+}
+
+//function stylesheet()
+//{
+//echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"css.css\">";
+//}
+
+function odb_connect()
+{
+ $link=mysql_connect('localhost','root','');
+ if(!$link)
+ {
+  echo "Could not connect to database".oLF();
+ }
+ else
+ {
+ # echo "Connected".oLF();
+ }
+
+ mysql_select_db('odb1');
+
+ return($link);
+}
+
+function odb_get_field($query,$db)
+{
+ $result = mysql_query($query,$db);
+ $row = mysql_fetch_row($result);
+ return($row[0]);
+}
+function odb_close($db)
+{
+ mysql_close($db);
+}
+
+function odb_num_of_rows($db,$table)
+{
+ $result = mysql_query("SELECT * FROM ".$table, $db);
+ $num_rows = mysql_num_rows($result);
+ return($num_rows);
+}
+function do_write_table($name)
+{
+echo "<table border ='1'>";
+echo "<th colspan='2'>";
+echo "$name";
+echo "</th>";
+echo "<tr>";
+echo "<td>";
+echo "options";
+echo "</td>";
+echo "<td>";
+echo "price";
+echo "</td>";
+echo "</tr>";
+}
+
+function do_end_table()
+{
+echo "</table>";
+}
+
+function do_write_header($title)
+{
+echo "<html>";
+echo "<head>";
+echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"css.css\">";
+echo "</head>";
+echo "<title>";
+echo $title;
+echo "</title>";
+
+echo "<form name='n_f1' method='POST' action='index.php'>\n";
+echo "<input type='hidden' name='n_cmd1' value='0' />\n";
+}
+
+function do_write_select($name,$value)
+{
+echo "<select name='$name'>";
+echo "<option value='$value'>$value</option>";
+}
+
+function do_write_select1($value)
+{
+echo "<option value='$value'>$value</option>";
+}
+
+
+function do_end_select()
+{
+echo "</select>";
+}
+
+function do_write_rb($name,$value,$price)
+{
+echo "<tr>";
+echo "<td>";
+echo "<input type='radio' name='$name', value='$value'/>$value";
+echo "</td>";
+echo "<td>";
+echo "$price";
+echo "</td>";
+echo "</tr>";
+}
+
+
+function do_write_rb1($name,$value,$price)
+{
+echo "<tr>";
+echo "<td>";
+echo "<input type='radio' name='$name', value='$value' checked/>$value";
+echo "</td>";
+echo "<td>";
+echo "$price";
+echo "</td>";
+echo "</tr>";
+}
+
+function do_write_cb($name,$value,$price)
+{
+echo "<tr>";
+echo "<td>";
+echo "<input type='checkbox' name='$name', value='$value'/>$value";
+echo "</td>";
+echo "<td>";
+echo "$price";
+echo "</td>";
+echo "</tr>";
+}
+
+function do_write_cb1($name,$value,$price)
+{
+echo "<tr>";
+echo "<td>";
+echo "<input type='checkbox' name='$name', value='$value' checked/>$value";
+echo "</td>";
+echo "<td>";
+echo "$price";
+echo "</td>";
+echo "</tr>";
+}
+
+function do_write_textbox($value,$type)
+{
+echo "$value:<input type='$type' name='n_$value' value='' />";
+}
+
+function do_write_footer()
+{
+echo "</form>";
+echo "</html>";
+}
+
+function do_write_str_btn1($value,$cmd1)
+{
+echo "<input type='submit' value='$value' onclick='document.n_f1.n_cmd1.value=\"$cmd1\";' \>";
+}
+
+$method=$_SERVER['REQUEST_METHOD'];
+
+if($method == "GET")
+{
+$cmd1="req_home";
+}
+else
+{
+$cmd1=htmlspecialchars($_POST["n_cmd1"]);
+}
+
+ session_start();
+ if(isset($_SESSION['pkey'])){
+ $pkey=$_SESSION['pkey'];
+ $db=odb_connect();
+ $query="select username from ouser where pkey=$pkey";
+ $username=odb_get_field($query,$db);
+ $query="select access_level from ouser where pkey=$pkey";
+ $access_level=odb_get_field($query,$db);
+ } 
+// else
+// {
+// $pkey=='-1';
+// }
+
+switch($cmd1)
+{
+case "req_home":
+req_home:
+do_write_header("home");
+echo "<h1>";
+echo "This is red plz";
+echo "</h1>";
+echo "<br>";
+echo "Home Page";
+ if(isset($_SESSION['pkey'])){
+echo "$username";
+do_write_str_btn1("logout","log_out");
+if ($access_level == "root"){
+do_write_str_btn1("root","root_log");
+}
+ if ($access_level == "webmaster") {
+ do_write_str_btn1("webmaster","webmaster_log");
+}
+  if ($access_level == "datamaster") {
+  do_write_str_btn1("datamaster","datamaster_log");
+}
+do_write_str_btn1("Change Password","change_passwd");
+}
+else
+ {
+ echo "<br>";
+# $pkey='-1';
+ echo "<br>";
+# echo $pkey;
+ echo "<br>";
+ echo "You're a guest login to make a purchase";
+do_write_str_btn1("register","register");
+do_write_str_btn1("login","req_login");
+ }
+echo "<br>";
+echo "<hr>";
+do_write_str_btn1("order","req_order");
+do_write_str_btn1("help","req_help");
+echo "<hr>";
+echo "<br>";
+break;
+
+case "log_out":
+//do_write_header("logout");
+session_destroy();
+goto req_home;
+break;
+
+case "datamaster_log":
+datamaster_log:
+do_write_header("datamaster_log");
+echo "Datamaster";
+echo "<br>";
+do_write_str_btn1("home","req_home");
+do_write_str_btn1("order","req_order");
+do_write_str_btn1("login","req_login");
+do_write_str_btn1("help","req_help");
+echo "<br>";
+echo "Change Password";
+echo "<br>";
+echo "user:<input type='text' name='data_c_u' value=''/>";
+echo "password:<input type='password' name='data_c_p' value=''/>";
+do_write_str_btn1("submit","datamaster_c_pass");
+echo "<br>";
+echo "Change Price";
+echo "<br>";
+echo "item:<input type='text' name='data_p_u' value=''/>";
+echo "price:<input type='text' name='data_p_p' value=''/>";
+do_write_str_btn1("submit","datamaster_c_price");
+echo "<br>";
+echo "Add Item";
+echo "<br>";
+echo "Flavor:<input type='text' name='data_pp_u' value=''/>";
+echo "Price:<input type='text' name='data_pp_p' value=''/>";
+do_write_str_btn1("submit","datamaster_a_item");
+echo "<br>";
+echo "Delete Item";
+echo "<br>";
+echo "Flavor:<input type='text' name='data_d_u' value=''/>";
+do_write_str_btn1("submit","datamaster_d_item");
+echo "<br>";
+echo "Show/NoShow Items";
+echo "<br>";
+echo "Item:<input type='text' name='data_s_u' value=''/>";
+echo "<br>";
+echo "1=on 0=off";
+echo "<br>";
+echo "Show/Noshow:<input type='text' name='data_sn_u' value=''/>";
+do_write_str_btn1("submit","datamaster_s_item");
+break;
+
+
+case "datamaster_s_item":
+$data_u=$_POST['data_s_u'];
+$data_p=$_POST['data_sn_u'];
+#if ($data_p ==!NULL) {
+$db=odb_connect();
+$query="update choco2 SET on_hand='$data_p' where name='$data_u';";
+mysql_query($query,$db);
+goto datamaster_log;
+#}
+//else
+//{
+//echo "<hr>";
+//echo "show item field blank please enter value";
+//echo "<hr>";
+goto datamaster_log;
+//}
+break;
+
+case "datamaster_d_item":
+$data_u=$_POST['data_d_u'];
+if ($data_u ==!NULL) {
+$db=odb_connect();
+$query="delete from choco2 where name = '$data_u';";
+mysql_query($query,$db);
+goto datamaster_log;
+}
+else
+{
+echo "<hr>";
+echo "delete item field is blank add a flavor";
+echo "<hr>";
+goto datamaster_log;
+}
+break;
+
+
+case "datamaster_a_item":
+$data_u=$_POST['data_pp_u'];
+$data_p=$_POST['data_pp_p'];
+if ($data_p ==!NULL) {
+$db=odb_connect();
+$query="insert into choco2 values(NULL,'Milka','$data_u','1','$data_p');";
+mysql_query($query,$db);
+goto datamaster_log;
+}
+else
+{
+echo "<hr>";
+echo "add item field blank, enter a value";
+echo "<hr>";
+goto datamaster_log;
+}
+break;
+
+case "datamaster_c_price":
+$data_u=$_POST['data_p_u'];
+$data_p=$_POST['data_p_p'];
+if ($data_p ==!NULL) {
+$db=odb_connect();
+$query="update choco2 SET price='$data_p' where name='$data_u';";
+mysql_query($query,$db);
+goto datamaster_log;
+}
+else
+{
+echo "<hr>";
+echo "change price field blank";
+echo "<hr>";
+goto datamaster_log;
+}
+break;
+
+case "datamaster_c_pass":
+$data_u=$_POST['data_c_u'];
+$data_p=$_POST['data_c_p'];
+if ($data_p ==!NULL) {
+$db=odb_connect();
+$query="update ouser SET password='$data_p' where username='$data_u'";
+mysql_query($query,$db);
+goto datamaster_log;
+}
+else
+{
+echo "<hr>";
+echo "Change password field blank";
+echo "<hr>";
+goto datamaster_log;
+}
+break;
+
+case "webmaster_log":
+webmaster_log:
+do_write_header("webmaster_log");
+echo "webmaster";
+echo "<br>";
+do_write_str_btn1("home","req_home");
+do_write_str_btn1("order","req_order");
+do_write_str_btn1("help","req_help");
+echo "<br>";
+echo "Create Customer";
+echo "<br>";
+echo "user:<input type='text' name='web_u' value=''/>";
+echo "password:<input type='password' name='web_p' value=''/>";
+do_write_str_btn1("submit","webmaster_c_customer");
+echo "<br>";
+echo "Change Password";
+echo "<br>";
+echo "user:<input type='text' name='web_c_u' value=''/>";
+echo "password:<input type='password' name='web_c_p' value=''/>";
+do_write_str_btn1("submit","webmaster_pass");
+echo "<br>";
+echo "Delete a user";
+echo "<br>";
+echo "user:<input type='text' name='web_d_u' value=''/>";
+do_write_str_btn1("submit","webmaster_delete");
+echo "<br>";
+echo "<br>";
+echo "Reset Password";
+echo "<br>";
+echo "user:<input type='text' name='web_r_u' value=''/>";
+echo "password:<input type='password' name='web_r_p' value=''/>";
+do_write_str_btn1("submit","webmaster_reset");
+break;
+
+case "webmaster_reset";
+$web_u=$_POST['web_r_u'];
+$web_p=$_POST['web_r_p'];
+if ($web_p ==!NULL) {
+$db=odb_connect();
+$query="update ouser SET password='$web_p' where username='$web_u'";
+mysql_query($query,$db);
+goto webmaster_log;
+}
+else
+{
+echo "<hr>";
+echo "blank line on reset password field";
+echo "<hr>";
+goto webmaster_log;
+}
+break;
+
+
+case "webmaster_delete";
+$web_u=$_POST['web_d_u'];
+if ($web_u ==!NULL) {
+$db=odb_connect();
+$query="DELETE FROM ouser where username='$web_u';";
+mysql_query($query,$db);
+goto webmaster_log;
+}
+else
+{
+echo "<hr>";
+echo "Delete a user field blank";
+echo "<hr>";
+goto webmaster_log;
+}
+break;
+
+case "webmaster_pass";
+$web_u=$_POST['web_c_u'];
+$web_p=$_POST['web_c_p'];
+if ($web_p ==!NULL) {
+$db=odb_connect();
+$query="update ouser SET password='$web_p' where username='$web_u'";
+mysql_query($query,$db);
+goto webmaster_log;
+}
+else
+{
+echo "<hr>";
+echo "password field is blank...";
+echo "<hr>";
+goto webmaster_log;
+}
+break;
+
+case "webmaster_c_customer":
+$web_u=$_POST['web_u'];
+$web_p=$_POST['web_p'];
+if ($web_p==!NULL){
+$db=odb_connect();
+$query="insert into ouser values(NULL,'$web_u','$web_p','new_account','customer','0','0',NOW(),NOW(),'2');";
+mysql_query($query,$db);
+goto webmaster_log;
+}
+else
+{
+echo "<hr>";
+echo "You entered a blank, stop that";
+echo "<hr>";
+}
+goto webmaster_log;
+break;
+
+case "root_log":
+root_log:
+do_write_header("root_log");
+echo "root";
+echo "<br>";
+do_write_str_btn1("home","req_home");
+do_write_str_btn1("order","req_order");
+do_write_str_btn1("help","req_help");
+echo "<br>";
+echo "change users password";
+echo "<br>";
+echo "user:<input type='text' name='root_u' value=''/>";
+echo "password:<input type='password' name='root_p' value=''/>";
+do_write_str_btn1("submit","root_pass");
+echo "<br>";
+echo "Create Webmaster";
+echo "<br>";
+echo "user:<input type='text' name='root_web_u' value=''/>";
+echo "password:<input type='password' name='root_web_p' value=''/>";
+do_write_str_btn1("submit","root_webmaster");
+echo "<br>";
+echo "Create Datamaster";
+echo "<br>";
+echo "user:<input type='text' name='root_data_u' value=''/>";
+echo "password:<input type='password' name='root_data_p' value=''/>";
+do_write_str_btn1("submit","root_datamaster");
+break;
+
+case "root_datamaster":
+$root_data_u=$_POST['root_data_u'];
+$root_data_p=$_POST['root_data_p'];
+$query="insert into ouser values(NULL,'$root_data_u','$root_data_p','new_account','datamaster','0','0',NOW(),NOW(),'2');";
+mysql_query($query,$db);
+goto root_log;
+break;
+
+case "root_webmaster":
+$root_web_u=$_POST['root_web_u'];
+$root_web_p=$_POST['root_web_p'];
+$db=odb_connect();
+$query="insert into ouser values(NULL,'$root_web_u','$root_web_p','new_account','webmaster','0','0',NOW(),NOW(),'2');";
+mysql_query($query,$db);
+goto root_log;
+break;
+
+case "root_pass":
+$root_user=$_POST['root_u'];
+$root_pass=$_POST['root_p'];
+$db=odb_connect();
+$query="update ouser set password='$root_pass' where username='$root_user'";
+mysql_query($query,$db);
+goto root_log;
+break;
+
+case "change_passwd":
+do_write_header("ch_passwd");
+do_write_str_btn1("order","req_order");
+do_write_str_btn1("help","req_help");
+echo "<br>";
+echo "Change your password";
+echo "<hr>";
+echo "<input type='text' name='ch_pass' value=''/>";
+do_write_str_btn1("Submit","change_pass");
+break;
+
+case "change_pass":
+do_write_header("change_pass");
+echo "Password Changed..";
+do_write_str_btn1("home","req_home");
+do_write_str_btn1("login","req_login");
+$c_passwd=$_POST['ch_pass'];
+$db=odb_connect();
+$query="update ouser set password='$c_passwd' where username='$username'";
+mysql_query($query,$db);
+break;
+
+case "register":
+do_write_header("home");
+echo "<br>";
+echo "Register an account";
+echo "<br>";
+echo "<hr>";
+do_write_str_btn1("home","req_home");
+do_write_str_btn1("order","req_order");
+do_write_str_btn1("login","req_login");
+do_write_str_btn1("help","req_help");
+echo "<br>";
+echo "<hr>";
+echo "username:<input type='text' name='reg_name' value=''/>";
+echo "password:<input type='password' name='reg_pass' value=''/>";
+do_write_str_btn1("register","regg");
+break;
+
+case "regg":
+do_write_header("regis");
+$rname=$_POST['reg_name'];
+$rpasswd=$_POST['reg_pass'];
+if ($rname ==!NULL) {
+echo "Registered...";
+do_write_str_btn1("home","req_home");
+do_write_str_btn1("order","req_order");
+do_write_str_btn1("login","req_login");
+do_write_str_btn1("help","req_help");
+$db=odb_connect();
+$query="insert into ouser values(NULL,'$rname','$rpasswd','new_account','customer','0','0',NOW(),NOW(),'2');";
+mysql_query($query,$db);
+}
+else
+{
+echo "Enter a value to register an account";
+}
+break;
+
+case "req_order":
+do_write_header("order");
+echo "<br>";
+echo "Order Page";
+echo "<br>";
+do_write_str_btn1("home","req_home");
+do_write_str_btn1("help","req_help");
+echo "<br>";
+echo "<hr>";
+$db=odb_connect();
+$n=odb_num_of_rows($db,"choco");
+do_write_table("choco");
+for($i=1;$i<=$n;++$i) 
+{
+ $query="select name from choco where pkey=".$i;
+ $value=odb_get_field($query,$db);
+ $query="select price from choco where pkey=".$i;
+ $price=odb_get_field($query,$db);
+ $query="select on_hand from choco where pkey=".$i;
+ $on_hand=odb_get_field($query,$db);
+if($on_hand==1 && $i==1)
+{
+ do_write_rb1("group1",$value,$price);
+}
+if($i!==1)
+ do_write_rb("group1",$value,$price);
+}
+do_end_table();
+do_write_table("choco2");
+$n=odb_num_of_rows($db,"choco2");
+for($i=1;$i<=100;++$i)
+{
+ $query="select name from choco2 where pkey=".$i;
+ $value=odb_get_field($query,$db);
+ $query="select price from choco2 where pkey=".$i;
+ $price=odb_get_field($query,$db);
+ $query="select on_hand from choco2 where pkey=".$i;
+ $on_hand=odb_get_field($query,$db);
+
+if($on_hand==1)
+{
+do_write_cb("ckgroup$i",$value,$price);
+}
+
+//if($i==!NULL)
+//{
+//if($i==1 && $on_hand==1)
+//{
+// do_write_cb1("ckgroup$i",$value,$price);
+//}
+//if($i!==1)
+//do_write_cb("ckgroup$i",$value,$price);
+//}
+}
+do_end_table();
+do_write_str_btn1("Submit","post_radio");
+break;
+
+case "post_radio":
+do_write_header("post");
+if(!isset($_SESSION['pkey'])){
+echo "please login first";
+do_write_str_btn1("login","req_login");
+do_write_str_btn1("register","register");
+echo "<br>";
+}
+$db=odb_connect();
+$n=odb_num_of_rows($db,"choco");
+$radio_select=$_POST['group1'];
+$query="select price from choco where name='$radio_select'";
+$price=odb_get_field($query,$db);
+$total=$price;
+for($i=1;$i<=100;++$i)
+{
+if(isset($_POST["ckgroup$i"])){
+do_write_str_btn1("home","req_home");
+do_write_str_btn1("help","req_help");
+echo "<br>";
+$db=odb_connect();
+$it=$_POST["ckgroup$i"];
+$query="select price from choco2 where name='$it'";
+$priceck=odb_get_field($query,$db);
+$total=$total+$priceck;
+echo $it;
+echo "|".$priceck;
+echo "<br>";
+}
+}
+echo "$radio_select|";
+echo "$price";
+echo "<hr>";
+echo "Total:$total";
+break;
+
+case "req_login":
+do_write_header("login");
+echo "<br>";
+echo "Login Page";
+echo "<br>";
+do_write_str_btn1("order","req_order");
+do_write_str_btn1("home","req_home");
+do_write_str_btn1("help","req_help");
+echo "<br>";
+echo "<hr>";
+echo "User name:";
+echo "<input type='text' name='n_uname' value=''/>";
+echo "Password:";
+echo "<input type='password' name='n_passwd' value=''/>";
+do_write_str_btn1("Login","do_login");
+echo "<hr>";
+break;
+
+case "do_login":
+do_write_header("Login");
+echo "<br>";
+do_write_str_btn1("home","req_home");
+do_write_str_btn1("help","req_help");
+echo "<br>";
+echo "<hr>";
+$uname=$_POST['n_uname'];
+$passwd=$_POST['n_passwd'];
+$db=odb_connect();
+$query="select username from ouser where username = '$uname'";
+$username=odb_get_field($query,$db);
+$query="select pkey from ouser where username = '$uname'";
+$pkey=odb_get_field($query,$db);
+echo "<br>";
+$query="select password from ouser where password = '$passwd'";
+$password=odb_get_field($query,$db);
+if($uname == $username && $uname != NULL)
+{
+ if($passwd == $password && $passwd != NULL)
+{
+  echo "welcome $uname";
+ $_SESSION['pkey']=$pkey;
+}else{
+  echo "access denied";}
+
+}else{
+  echo "access denied";}
+#echo $password;
+echo "<hr>";
+break;
+
+case "req_help":
+do_write_header("help");
+echo "<br>";
+echo "Help Page";
+echo "<br>";
+do_write_str_btn1("order","req_order");
+do_write_str_btn1("home","req_home");
+echo "<br>";
+echo "<hr>";
+echo "<hr>";
+echo "<br>";
+break;
+}
+
+do_write_footer();
+?>
